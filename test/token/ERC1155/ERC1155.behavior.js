@@ -39,10 +39,10 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
 
       context('when accounts own some tokens', function () {
         beforeEach(async function () {
-          await this.token.$_mint(firstTokenHolder, firstTokenId, firstAmount, '0x', {
+          await this.token.$_mint(firstTokenHolder, firstTokenId, firstAmount, 0, '0x', {
             from: minter,
           });
-          await this.token.$_mint(secondTokenHolder, secondTokenId, secondAmount, '0x', {
+          await this.token.$_mint(secondTokenHolder, secondTokenId, secondAmount, 0, '0x', {
             from: minter,
           });
         });
@@ -101,10 +101,10 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
 
       context('when accounts own some tokens', function () {
         beforeEach(async function () {
-          await this.token.$_mint(firstTokenHolder, firstTokenId, firstAmount, '0x', {
+          await this.token.$_mint(firstTokenHolder, firstTokenId, firstAmount, 0, '0x', {
             from: minter,
           });
-          await this.token.$_mint(secondTokenHolder, secondTokenId, secondAmount, '0x', {
+          await this.token.$_mint(secondTokenHolder, secondTokenId, secondAmount, 0, '0x', {
             from: minter,
           });
         });
@@ -163,10 +163,10 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
 
     describe('safeTransferFrom', function () {
       beforeEach(async function () {
-        await this.token.$_mint(multiTokenHolder, firstTokenId, firstAmount, '0x', {
+        await this.token.$_mint(multiTokenHolder, firstTokenId, firstAmount, 0, '0x', {
           from: minter,
         });
-        await this.token.$_mint(multiTokenHolder, secondTokenId, secondAmount, '0x', {
+        await this.token.$_mint(multiTokenHolder, secondTokenId, secondAmount, 0, '0x', {
           from: minter,
         });
       });
@@ -176,7 +176,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
           this.token.safeTransferFrom(multiTokenHolder, recipient, firstTokenId, firstAmount.addn(1), '0x', {
             from: multiTokenHolder,
           }),
-          'ERC1155: insufficient balance for transfer',
+          'Timelock: insufficient balance for transfer',
         );
       });
 
@@ -416,10 +416,10 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
 
     describe('safeBatchTransferFrom', function () {
       beforeEach(async function () {
-        await this.token.$_mint(multiTokenHolder, firstTokenId, firstAmount, '0x', {
+        await this.token.$_mint(multiTokenHolder, firstTokenId, firstAmount, 0, '0x', {
           from: minter,
         });
-        await this.token.$_mint(multiTokenHolder, secondTokenId, secondAmount, '0x', {
+        await this.token.$_mint(multiTokenHolder, secondTokenId, secondAmount, 0, '0x', {
           from: minter,
         });
       });
@@ -434,7 +434,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             '0x',
             { from: multiTokenHolder },
           ),
-          'ERC1155: insufficient balance for transfer',
+          'Timelock: insufficient balance for transfer',
         );
       });
 
