@@ -20,7 +20,7 @@ import "./libs/TimelockBalance.sol";
  *
  * _Available since v3.1._
  */
-contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
+contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI {
     using Address for address;
     using TimelockBalance for uint;
 

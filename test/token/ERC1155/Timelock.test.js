@@ -12,7 +12,7 @@ contract('Timelock', function () {
     const initialURI = 'https://token-cdn-domain/{id}.json';
 
     beforeEach(async function () {
-        const ERC1155Mock = await ethers.getContractFactory('$ERC1155');
+        const ERC1155Mock = await ethers.getContractFactory('$ERC1155Timelock');
         this.token = await ERC1155Mock.deploy(initialURI);
         this.tokenAddress = this.token.address;
         const [accountA, accountB, accountC] = await ethers.getSigners();
