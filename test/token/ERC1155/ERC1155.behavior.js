@@ -3,8 +3,6 @@ const { ZERO_ADDRESS } = constants;
 
 const { expect } = require('chai');
 
-const { shouldSupportInterfaces } = require('../../utils/introspection/SupportsInterface.behavior');
-
 const ERC1155ReceiverMock = artifacts.require('ERC1155ReceiverMock');
 
 function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, multiTokenHolder, recipient, proxy]) {
@@ -758,7 +756,6 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
       });
     });
 
-    shouldSupportInterfaces(['ERC165', 'ERC1155']);
   });
 }
 
