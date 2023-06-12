@@ -34,10 +34,19 @@ library TimelockBalance {
             uint xt = x >> 224;
             uint yt = y >> 224;
             if (xt != yt) {
-                x = xt > block.timestamp ? xb * (xt - block.timestamp) : 0;
-                y = yt > block.timestamp ? yb * (yt - block.timestamp) : 0;
-                z = SimpleMath.avgRoundingUp(x, y, zb);
-                z += block.timestamp;
+                if (xt <= block.timestamp && yt <= block.timestamp) {
+                    // past + past ==> past
+                    xb *= (block.timestamp - xt);
+                    yb *= (block.timestamp - yt);
+                    z = SimpleMath.avg(x, y, zb);
+                    z = block.timestamp - z;
+                } else {
+                    // future + any ==> future
+                    x = xt > block.timestamp ? xb * (xt - block.timestamp) : 0;
+                    y = yt > block.timestamp ? yb * (yt - block.timestamp) : 0;
+                    z = SimpleMath.avgRoundingUp(x, y, zb);
+                    z += block.timestamp;
+                }
                 // TODO: verify z <= type(uint32).max always true
                 z <<= 224;
             }

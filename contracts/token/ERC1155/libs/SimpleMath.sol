@@ -45,6 +45,17 @@ library SimpleMath {
         }
     }
 
+    function avg(uint x, uint y, uint z) internal pure returns (uint) {
+        unchecked {
+            uint s = x + y;
+            if (s > x) {
+                return s / z;
+            }
+            // addition overflow
+            return s/z + y/z;
+        }
+    }
+
     // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
     function sqrt(uint y) internal pure returns (uint z) {
         if (y > 3) {
