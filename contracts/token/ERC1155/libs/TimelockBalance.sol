@@ -37,13 +37,9 @@ library TimelockBalance {
                 x = xt > block.timestamp ? xb * (xt - block.timestamp) : 0;
                 y = yt > block.timestamp ? yb * (yt - block.timestamp) : 0;
                 z = SimpleMath.avgRoundingUp(x, y, zb);
-                if (z > 0) {
-                    z += block.timestamp;
-                    require(z <= type(uint32).max, "Timelock: uint32 overflow");
-                }
+                z += block.timestamp;
+                // TODO: verify z <= type(uint32).max always true
                 z <<= 224;
-            } else {
-                z = xt > block.timestamp ? (xt << 224) : 0;
             }
             z |= zb;
         }
@@ -52,12 +48,12 @@ library TimelockBalance {
     function sub(uint x, uint y) internal view returns (uint) {
         unchecked {
             require(x >> 224 <= block.timestamp, "Timelock: unexpired");
-            x &= type(uint224).max;
-            if (x == y) {
+            uint xb = x & type(uint224).max;
+            if (xb == y) {
                 return 0;
             }
-            require(x > y, "Timelock: insufficient balance for transfer");
-            return x - y;
+            require(xb > y, "Timelock: insufficient balance for transfer");
+            return x - y; // preserve the time
         }
     }
 }
