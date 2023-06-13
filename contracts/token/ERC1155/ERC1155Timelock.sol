@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
+import "./IERC1155Timelock.sol";
 import "./libs/TimelockBalance.sol";
 
 /**
@@ -20,7 +21,7 @@ import "./libs/TimelockBalance.sol";
  *
  * _Available since v3.1._
  */
-contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI {
+contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC1155Timelock {
     using Address for address;
     using TimelockBalance for uint;
 
@@ -96,6 +97,36 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI {
         }
 
         return batchBalances;
+    }
+
+    /**
+     * Requirements:
+     *
+     * - `account` cannot be the zero address.
+     */
+    function locktimeOf(address account, uint256 id) public view virtual override returns (uint256) {
+        require(account != address(0), "ERC1155: address zero is not a valid owner");
+        return _balances[id][account].locktime();
+    }
+
+    /**
+     * Requirements:
+     *
+     * - `accounts` and `ids` must have the same length.
+     */
+    function locktimeOfBatch(
+        address[] memory accounts,
+        uint256[] memory ids
+    ) public view virtual override returns (uint256[] memory) {
+        require(accounts.length == ids.length, "ERC1155: accounts and ids length mismatch");
+
+        uint256[] memory batchLocktimes = new uint256[](accounts.length);
+
+        for (uint256 i = 0; i < accounts.length; ++i) {
+            batchLocktimes[i] = locktimeOf(accounts[i], ids[i]);
+        }
+
+        return batchLocktimes;
     }
 
     /**
