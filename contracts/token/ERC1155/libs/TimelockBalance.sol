@@ -24,31 +24,22 @@ library TimelockBalance {
 
     function add(uint x, uint y) internal view returns (uint z) {
         unchecked {
-            if (x == 0) {
-                return y;
-            }
             uint xb = x & type(uint224).max;
             uint yb = y & type(uint224).max;
             uint zb = xb + yb;
             require(zb <= type(uint224).max, "Timelock: uint224 overflow");
             uint xt = x >> 224;
             uint yt = y >> 224;
+            if (xt == 0) {
+                xt = block.timestamp;
+            }
+            if (yt == 0) {
+                yt = block.timestamp;
+            }
             if (xt != yt) {
-                if (xt <= block.timestamp && yt <= block.timestamp) {
-                    // past + past ==> past
-                    xb *= (block.timestamp - xt);
-                    yb *= (block.timestamp - yt);
-                    z = SimpleMath.avg(x, y, zb);
-                    z = block.timestamp - z;
-                } else {
-                    // future + any ==> future
-                    x = xt > block.timestamp ? xb * (xt - block.timestamp) : 0;
-                    y = yt > block.timestamp ? yb * (yt - block.timestamp) : 0;
-                    z = SimpleMath.avgRoundingUp(x, y, zb);
-                    z += block.timestamp;
-                }
-                // TODO: verify z <= type(uint32).max always true
-                z <<= 224;
+                z = SimpleMath.avgRoundingUp(xt*xb, yt*yb, zb) << 224;
+            } else {
+                z = xt << 224;
             }
             z |= zb;
         }
