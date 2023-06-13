@@ -114,7 +114,8 @@ contract('Timelock', function () {
             });
             it("Dilution exploit", async function () {
                 await this.token.connect(this.accB).setApprovalForAll(this.utr.address, true);
-                const curTime = await time.latest();
+                const curTime = 1 + await time.latest();
+                await time.setNextBlockTimestamp(curTime);
                 await expect(this.utr.exec([], [
                     {
                         inputs: [],
