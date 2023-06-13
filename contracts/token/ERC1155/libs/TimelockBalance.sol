@@ -24,17 +24,20 @@ library TimelockBalance {
 
     function add(uint x, uint y) internal view returns (uint z) {
         unchecked {
-            uint xb = x & type(uint224).max;
             uint yb = y & type(uint224).max;
+            uint yt = y >> 224;
+            if (yt == 0) {
+                yt = block.timestamp;
+            }
+            if (x == 0) {
+                return (yt << 224) | yb;
+            }
+            uint xb = x & type(uint224).max;
             uint zb = xb + yb;
             require(zb <= type(uint224).max, "Timelock: uint224 overflow");
             uint xt = x >> 224;
-            uint yt = y >> 224;
             if (xt == 0) {
                 xt = block.timestamp;
-            }
-            if (yt == 0) {
-                yt = block.timestamp;
             }
             if (xt != yt) {
                 z = SimpleMath.avgRoundingUp(xt*xb, yt*yb, zb) << 224;
