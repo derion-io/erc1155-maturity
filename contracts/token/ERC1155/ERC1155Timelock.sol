@@ -205,8 +205,9 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
         _beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
         uint256 fromBalance = _balances[id][from];
-        _balances[id][from] = fromBalance.sub(amount);
-        _balances[id][to] = _balances[id][to].add(amount);
+        uint timelockAmount;
+        (_balances[id][from], timelockAmount) = fromBalance.split(amount);
+        _balances[id][to] = _balances[id][to].merge(timelockAmount);
 
         emit TransferSingle(operator, from, to, id, amount);
 
@@ -243,8 +244,9 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
             uint256 id = ids[i];
             uint256 amount = amounts[i];
 
-            _balances[id][from] = _balances[id][from].sub(amount);
-            _balances[id][to] = _balances[id][to].add(amount);
+            uint timelockAmount;
+            (_balances[id][from], timelockAmount) = _balances[id][from].split(amount);
+            _balances[id][to] = _balances[id][to].merge(timelockAmount);
         }
 
         emit TransferBatch(operator, from, to, ids, amounts);
@@ -298,7 +300,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         uint timelockAmount = TimelockBalance.pack(amount, locktime);
-        _balances[id][to] = _balances[id][to].add(timelockAmount);
+        _balances[id][to] = _balances[id][to].merge(timelockAmount);
 
         emit TransferSingle(operator, address(0), to, id, amount);
 
@@ -334,7 +336,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint timelockAmount = TimelockBalance.pack(amounts[i], locktime);
-            _balances[ids[i]][to] = _balances[ids[i]][to].add(timelockAmount);
+            _balances[ids[i]][to] = _balances[ids[i]][to].merge(timelockAmount);
         }
 
         emit TransferBatch(operator, address(0), to, ids, amounts);
@@ -363,7 +365,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
 
         _beforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
-        _balances[id][from] = _balances[id][from].sub(amount);
+        (_balances[id][from],) = _balances[id][from].split(amount);
 
         emit TransferSingle(operator, from, address(0), id, amount);
 
@@ -389,7 +391,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            _balances[id][from] = _balances[id][from].sub(amounts[i]);
+            (_balances[id][from], ) = _balances[id][from].split(amounts[i]);
         }
 
         emit TransferBatch(operator, from, address(0), ids, amounts);

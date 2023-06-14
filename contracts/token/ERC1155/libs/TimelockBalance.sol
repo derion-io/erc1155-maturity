@@ -4,15 +4,18 @@ pragma solidity ^0.8.0;
 import "./SimpleMath.sol";
 
 library TimelockBalance {
-    function pack(uint a, uint t) internal pure returns (uint) {
-        require(t <= type(uint32).max, "Timelock: uint32 overflow");
-        require(a <= type(uint224).max, "Timelock: uint224 overflow");
-        return a | (t << 224);
+    uint constant MAX_TIME = type(uint32).max << 224;
+    uint constant MAX_BALANCE = type(uint224).max;
+
+    function pack(uint b, uint t) internal pure returns (uint) {
+        require(t <= MAX_TIME, "Timelock: t overflow");
+        require(b <= MAX_BALANCE, "Timelock: b overflow");
+        return (t << 224) | b;
     }
 
     function amount(uint x) internal pure returns (uint) {
         unchecked {
-            return x & type(uint224).max;
+            return x & MAX_BALANCE;
         }
     }
 
@@ -22,41 +25,31 @@ library TimelockBalance {
         }
     }
 
-    function add(uint x, uint y) internal view returns (uint z) {
+    function merge(uint x, uint y) internal view returns (uint z) {
         unchecked {
-            uint yb = y & type(uint224).max;
-            uint yt = y >> 224;
-            if (yt == 0) {
-                yt = block.timestamp;
-            }
             if (x == 0) {
-                return (yt << 224) | yb;
+                return y;
             }
-            uint xb = x & type(uint224).max;
+            uint xt = SimpleMath.max(block.timestamp, x >> 224);
+            uint yt = y >> 224;
+            require(yt <= xt, "Timelock: locktime order");
+            uint yb = y & MAX_BALANCE;
+            uint xb = x & MAX_BALANCE;
             uint zb = xb + yb;
-            require(zb <= type(uint224).max, "Timelock: uint224 overflow");
-            uint xt = x >> 224;
-            if (xt == 0) {
-                xt = block.timestamp;
-            }
-            if (xt != yt) {
-                z = SimpleMath.avgRoundingUp(xt*xb, yt*yb, zb) << 224;
-            } else {
-                z = xt << 224;
-            }
-            z |= zb;
+            require(zb <= MAX_BALANCE, "Timelock: zb overflow");
+            return x + yb;
         }
     }
 
-    function sub(uint x, uint y) internal view returns (uint) {
+    function split(uint z, uint yb) internal pure returns (uint x, uint y) {
         unchecked {
-            require(x >> 224 <= block.timestamp, "Timelock: unexpired");
-            uint xb = x & type(uint224).max;
-            if (xb == y) {
-                return 0;
+            uint zb = z & MAX_BALANCE;
+            if (zb == yb) {
+                return (0, z); // full transfer
             }
-            require(xb > y, "Timelock: insufficient balance for transfer");
-            return x - y; // preserve the time
+            require(zb > yb, "Timelock: insufficient balance");
+            x = z - yb; // preserve the locktime
+            y = (z & MAX_TIME) | yb;
         }
     }
 }
