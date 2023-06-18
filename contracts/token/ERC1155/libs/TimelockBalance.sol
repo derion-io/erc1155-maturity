@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "./SimpleMath.sol";
 
 library TimelockBalance {
-    uint constant MAX_TIME = type(uint32).max << 224;
+    uint constant MAX_TIME = uint(type(uint32).max) << 224;
     uint constant MAX_BALANCE = type(uint224).max;
 
     function pack(uint b, uint t) internal pure returns (uint) {
