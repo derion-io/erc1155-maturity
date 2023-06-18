@@ -38,13 +38,13 @@ contract('Timelock', function () {
                     await this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data)
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: uint224 overflow');
+                    ).to.be.revertedWith('Timelock: zb overflow');
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uintMaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: uint224 overflow');
+                    ).to.be.revertedWith('Timelock: b overflow');
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uintMaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: uint224 overflow');
+                    ).to.be.revertedWith('Timelock: b overflow');
                 });
             
             it('mint uint224.max / 2 => A success\n' +
@@ -56,14 +56,14 @@ contract('Timelock', function () {
                     await this.token.$_mint(this.accC.address, tokenId, uint224MaxDiv2, lockTime, data)
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: uint224 overflow');
+                    ).to.be.revertedWith('Timelock: zb overflow');
                 });
             
             it("Timelock overflow must be revert", async function () {
                 const MAXUINT32 = 4294967296
                 await expect(
                     this.token.$_mint(this.accA.address, tokenId, uint224MaxDiv2, MAXUINT32, data)
-                ).to.be.revertedWith('Timelock: uint32 overflow');
+                ).to.be.revertedWith('Timelock: t overflow');
             });
         });
     });
@@ -79,24 +79,21 @@ contract('Timelock', function () {
             await this.token.$_mint(this.accA.address, tokenId, mintAmount, lockTime, data);
         });
 
-        describe('safeTransferFrom', function () {
-            it('reverts when transfer token before expiration', async function () {
-                await expect(this.token.connect(this.accA).safeTransferFrom(this.accA.address, this.accB.address, tokenId, mintAmount, data)).to.be.revertedWith('Timelock: unexpired'); 
+        describe('safeTransferFrom partly fungible', function () {
+            it('Transfer to an empty account with same lock time', async function () {
+                await this.token.connect(this.accA).safeTransferFrom(
+                    this.accA.address,
+                    this.accB.address,
+                    tokenId,
+                    mintAmount.div(2),
+                    data
+                )
+                expect(await this.token.locktimeOf(this.accA.address, tokenId))
+                .to.be.equal(await this.token.locktimeOf(this.accB.address, tokenId))
             });
-            it('transfer was successful', async function () {
-                await time.increase(60);
-                await this.token.connect(this.accA).safeTransferFrom(this.accA.address, this.accB.address, tokenId, mintAmount, data);
-            });
-            it('Re calculate lock time', async function () {
+            it('Merge two position will result in a position with a later maturity time', async function () {
                 const curTime = await time.latest();
                 await this.utr.exec([], [
-                    {
-                        inputs: [],
-                        code: this.tokenAddress,
-                        data: (await this.token.populateTransaction.$_mint(
-                            this.accB.address, tokenId, mintAmount, bn(10).add(curTime), data
-                        )).data,
-                    },
                     {
                         inputs: [],
                         code: this.tokenAddress,
@@ -104,43 +101,25 @@ contract('Timelock', function () {
                             this.accB.address, tokenId, mintAmount.mul(2), bn(30).add(curTime), data
                         )).data,
                     },
-                ]);
-                const lockDuration = Math.ceil((1000 * 10 + 1000 * 2 * 30) / (1000 * 3));
-                await time.setNextBlockTimestamp(curTime + lockDuration - 1);
-                await expect(
-                    this.token.connect(this.accB).safeTransferFrom(this.accB.address, this.accC.address, tokenId, mintAmount, data)
-                ).to.be.revertedWith('Timelock: unexpired');
-                await this.token.connect(this.accB).safeTransferFrom(this.accB.address, this.accC.address, tokenId, mintAmount, data);
-            });
-            it("Dilution exploit", async function () {
-                await this.token.connect(this.accB).setApprovalForAll(this.utr.address, true);
-                const curTime = 1 + await time.latest();
-                await time.setNextBlockTimestamp(curTime);
-                await expect(this.utr.exec([], [
                     {
                         inputs: [],
                         code: this.tokenAddress,
                         data: (await this.token.populateTransaction.$_mint(
-                            this.accB.address, tokenId, bn(100), bn(1000).add(curTime), data
-                        )).data,
-                    },
-                    {
-                        inputs: [],
-                        code: this.tokenAddress,
-                        data: (await this.token.populateTransaction.$_mint(
-                            this.accB.address, tokenId, bn(1000000000), bn(0).add(curTime), data
-                        )).data,
-                    },
-                    {
-                        inputs: [],
-                        code: this.tokenAddress,
-                        data: (await this.token.populateTransaction.safeTransferFrom(
-                            this.accB.address, this.accC.address, tokenId, bn(100), data
+                            this.accB.address, tokenId, mintAmount, bn(10).add(curTime), data
                         )).data,
                     }
-                ], {
-                    gasLimit: 3000000
-                })).to.be.revertedWith('Timelock: unexpired');
+                ]);
+                expect(await this.token.locktimeOf(this.accB.address, tokenId)).to.be.equal(bn(30).add(curTime))
+            });
+            it("A maturing position cannot be transferred or merged into a more matured position", async function () {
+                const curTime = bn(await time.latest())
+                await this.token.$_mint(this.accB.address, tokenId, mintAmount, curTime.add(100), data);
+
+                await expect(this.token.connect(this.accB).safeTransferFrom(this.accB.address, this.accA.address, tokenId, mintAmount, data))
+                .to.be.revertedWith('Timelock: locktime order')
+
+                await expect(this.token.$_mint(this.accB.address, tokenId, mintAmount, curTime.add(1000), data))
+                .to.be.revertedWith('Timelock: locktime order')
             });
         });
     })

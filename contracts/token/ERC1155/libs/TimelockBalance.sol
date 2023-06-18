@@ -8,7 +8,7 @@ library TimelockBalance {
     uint constant MAX_BALANCE = type(uint224).max;
 
     function pack(uint b, uint t) internal pure returns (uint) {
-        require(t <= MAX_TIME, "Timelock: t overflow");
+        require(t <= (MAX_TIME >> 224), "Timelock: t overflow");
         require(b <= MAX_BALANCE, "Timelock: b overflow");
         return (t << 224) | b;
     }
