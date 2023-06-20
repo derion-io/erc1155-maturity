@@ -111,7 +111,7 @@ contract('ERC1155', function (accounts) {
       });
 
       it('reverts when burning a non-existent token id', async function () {
-        await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'Timelock: insufficient balance for transfer');
+        await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'Timelock: insufficient balance');
       });
 
       it('reverts when burning more than available tokens', async function () {
@@ -119,7 +119,7 @@ contract('ERC1155', function (accounts) {
 
         await expectRevert(
           this.token.$_burn(tokenHolder, tokenId, mintAmount.addn(1)),
-          'Timelock: insufficient balance for transfer',
+          'Timelock: insufficient balance',
         );
       });
 
@@ -168,7 +168,7 @@ contract('ERC1155', function (accounts) {
       it('reverts when burning a non-existent token id', async function () {
         await expectRevert(
           this.token.$_burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts),
-          'Timelock: insufficient balance for transfer',
+          'Timelock: insufficient balance',
         );
       });
 
