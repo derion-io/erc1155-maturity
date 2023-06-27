@@ -3,15 +3,15 @@ pragma solidity ^0.8.0;
 
 import "./SimpleMath.sol";
 
-library TimelockBalance {
+library TimeBalance {
     uint constant TIME_MAX = type(uint32).max;
     uint constant TIME_MASK = TIME_MAX << 224;
     uint constant BALANCE_MAX = type(uint224).max;
     uint constant BALANCE_MASK = BALANCE_MAX;
 
     function pack(uint b, uint t) internal pure returns (uint) {
-        require(t <= type(uint32).max, "Timelock: t overflow");
-        require(b <= BALANCE_MAX, "Timelock: b overflow");
+        require(t <= type(uint32).max, "Maturity: t overflow");
+        require(b <= BALANCE_MAX, "Maturity: b overflow");
         return (t << 224) | b;
     }
 
@@ -34,11 +34,11 @@ library TimelockBalance {
             }
             uint xt = SimpleMath.max(block.timestamp, x >> 224);
             uint yt = y >> 224;
-            require(yt <= xt, "Timelock: locktime order");
+            require(yt <= xt, "Maturity: locktime order");
             uint yb = y & BALANCE_MASK;
             uint xb = x & BALANCE_MASK;
             uint zb = xb + yb;
-            require(zb <= BALANCE_MAX, "Timelock: zb overflow");
+            require(zb <= BALANCE_MAX, "Maturity: zb overflow");
             return x + yb;
         }
     }
@@ -49,7 +49,7 @@ library TimelockBalance {
             if (zb == yb) {
                 return (0, z); // full transfer
             }
-            require(zb > yb, "Timelock: insufficient balance");
+            require(zb > yb, "Maturity: insufficient balance");
             x = z - yb; // preserve the locktime
             y = (z & TIME_MASK) | yb;
         }

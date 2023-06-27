@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.8.0) (token/ERC1155/ERC1155.sol)
-// Derivable Contracts (ERC1155Timelock)
+// Derivable Contracts (ERC1155Maturity)
 
 pragma solidity ^0.8.0;
 
@@ -11,8 +11,8 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./IERC1155Timelock.sol";
-import "./libs/TimelockBalance.sol";
+import "./IERC1155Maturity.sol";
+import "./libs/TimeBalance.sol";
 
 /**
  * @dev Implementation of the basic standard multi-token.
@@ -21,9 +21,9 @@ import "./libs/TimelockBalance.sol";
  *
  * _Available since v3.1._
  */
-contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC1155Timelock {
+contract ERC1155Maturity is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC1155Maturity {
     using Address for address;
-    using TimelockBalance for uint;
+    using TimeBalance for uint;
 
     // Mapping from token ID to account balances
     mapping(uint256 => mapping(address => uint256)) private _balances;
@@ -104,7 +104,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
      *
      * - `account` cannot be the zero address.
      */
-    function locktimeOf(address account, uint256 id) public view virtual override returns (uint256) {
+    function maturityOf(address account, uint256 id) public view virtual override returns (uint256) {
         require(account != address(0), "ERC1155: address zero is not a valid owner");
         return _balances[id][account].locktime();
     }
@@ -114,7 +114,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
      *
      * - `accounts` and `ids` must have the same length.
      */
-    function locktimeOfBatch(
+    function maturityOfBatch(
         address[] memory accounts,
         uint256[] memory ids
     ) public view virtual override returns (uint256[] memory) {
@@ -123,7 +123,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
         uint256[] memory batchLocktimes = new uint256[](accounts.length);
 
         for (uint256 i = 0; i < accounts.length; ++i) {
-            batchLocktimes[i] = locktimeOf(accounts[i], ids[i]);
+            batchLocktimes[i] = maturityOf(accounts[i], ids[i]);
         }
 
         return batchLocktimes;
@@ -299,7 +299,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
 
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
-        uint timelockAmount = TimelockBalance.pack(amount, locktime);
+        uint timelockAmount = TimeBalance.pack(amount, locktime);
         _balances[id][to] = _balances[id][to].merge(timelockAmount);
 
         emit TransferSingle(operator, address(0), to, id, amount);
@@ -335,7 +335,7 @@ contract ERC1155Timelock is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; i++) {
-            uint timelockAmount = TimelockBalance.pack(amounts[i], locktime);
+            uint timelockAmount = TimeBalance.pack(amounts[i], locktime);
             _balances[ids[i]][to] = _balances[ids[i]][to].merge(timelockAmount);
         }
 

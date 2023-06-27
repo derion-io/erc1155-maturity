@@ -174,7 +174,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
           this.token.safeTransferFrom(multiTokenHolder, recipient, firstTokenId, firstAmount.addn(1), '0x', {
             from: multiTokenHolder,
           }),
-          'Timelock: insufficient balance',
+          'Maturity: insufficient balance',
         );
       });
 
@@ -432,7 +432,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             '0x',
             { from: multiTokenHolder },
           ),
-          'Timelock: insufficient balance',
+          'Maturity: insufficient balance',
         );
       });
 

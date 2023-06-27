@@ -4,7 +4,7 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const { shouldBehaveLikeERC1155 } = require('./ERC1155.behavior');
-const ERC1155Mock = artifacts.require('$ERC1155Timelock');
+const ERC1155Mock = artifacts.require('$ERC1155Maturity');
 
 contract('ERC1155', function (accounts) {
   const [operator, tokenHolder, tokenBatchHolder, ...otherAccounts] = accounts;
@@ -111,7 +111,7 @@ contract('ERC1155', function (accounts) {
       });
 
       it('reverts when burning a non-existent token id', async function () {
-        await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'Timelock: insufficient balance');
+        await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'Maturity: insufficient balance');
       });
 
       it('reverts when burning more than available tokens', async function () {
@@ -119,7 +119,7 @@ contract('ERC1155', function (accounts) {
 
         await expectRevert(
           this.token.$_burn(tokenHolder, tokenId, mintAmount.addn(1)),
-          'Timelock: insufficient balance',
+          'Maturity: insufficient balance',
         );
       });
 
@@ -168,7 +168,7 @@ contract('ERC1155', function (accounts) {
       it('reverts when burning a non-existent token id', async function () {
         await expectRevert(
           this.token.$_burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts),
-          'Timelock: insufficient balance',
+          'Maturity: insufficient balance',
         );
       });
 

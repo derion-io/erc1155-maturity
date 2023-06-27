@@ -7,12 +7,12 @@ use(solidity);
 const UTR = require('@derivable/utr/build/UniversalTokenRouter.json');
 const bn = ethers.BigNumber.from;
 
-contract('Timelock', function () {
+contract('Maturity', function () {
 
     const initialURI = 'https://token-cdn-domain/{id}.json';
 
     beforeEach(async function () {
-        const ERC1155Mock = await ethers.getContractFactory('$ERC1155Timelock');
+        const ERC1155Mock = await ethers.getContractFactory('$ERC1155Maturity');
         this.token = await ERC1155Mock.deploy(initialURI);
         this.tokenAddress = this.token.address;
         const [accountA, accountB, accountC] = await ethers.getSigners();
@@ -38,13 +38,13 @@ contract('Timelock', function () {
                     await this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data)
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: zb overflow');
+                    ).to.be.revertedWith('Maturity: zb overflow');
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uintMaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: b overflow');
+                    ).to.be.revertedWith('Maturity: b overflow');
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uintMaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: b overflow');
+                    ).to.be.revertedWith('Maturity: b overflow');
                 });
             
             it('mint uint224.max / 2 => A success\n' +
@@ -56,14 +56,14 @@ contract('Timelock', function () {
                     await this.token.$_mint(this.accC.address, tokenId, uint224MaxDiv2, lockTime, data)
                     await expect(
                         this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data)
-                    ).to.be.revertedWith('Timelock: zb overflow');
+                    ).to.be.revertedWith('Maturity: zb overflow');
                 });
             
-            it("Timelock overflow must be revert", async function () {
+            it("Maturity overflow must be revert", async function () {
                 const MAXUINT32 = 4294967296
                 await expect(
                     this.token.$_mint(this.accA.address, tokenId, uint224MaxDiv2, MAXUINT32, data)
-                ).to.be.revertedWith('Timelock: t overflow');
+                ).to.be.revertedWith('Maturity: t overflow');
             });
         });
     });
@@ -88,8 +88,8 @@ contract('Timelock', function () {
                     mintAmount.div(2),
                     data
                 )
-                expect(await this.token.locktimeOf(this.accA.address, tokenId))
-                .to.be.equal(await this.token.locktimeOf(this.accB.address, tokenId))
+                expect(await this.token.maturityOf(this.accA.address, tokenId))
+                .to.be.equal(await this.token.maturityOf(this.accB.address, tokenId))
             });
             it('Merge two position will result in a position with a later maturity time', async function () {
                 const curTime = await time.latest();
@@ -109,17 +109,17 @@ contract('Timelock', function () {
                         )).data,
                     }
                 ]);
-                expect(await this.token.locktimeOf(this.accB.address, tokenId)).to.be.equal(bn(30).add(curTime))
+                expect(await this.token.maturityOf(this.accB.address, tokenId)).to.be.equal(bn(30).add(curTime))
             });
             it("A maturing position cannot be transferred or merged into a more matured position", async function () {
                 const curTime = bn(await time.latest())
                 await this.token.$_mint(this.accB.address, tokenId, mintAmount, curTime.add(100), data);
 
                 await expect(this.token.connect(this.accB).safeTransferFrom(this.accB.address, this.accA.address, tokenId, mintAmount, data))
-                .to.be.revertedWith('Timelock: locktime order')
+                .to.be.revertedWith('Maturity: locktime order')
 
                 await expect(this.token.$_mint(this.accB.address, tokenId, mintAmount, curTime.add(1000), data))
-                .to.be.revertedWith('Timelock: locktime order')
+                .to.be.revertedWith('Maturity: locktime order')
             });
         });
     })
