@@ -21,7 +21,7 @@ import "./libs/TimeBalance.sol";
  *
  * _Available since v3.1._
  */
-contract ERC1155Maturity is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC1155Maturity {
+contract ERC1155Maturity is Context, IERC1155Maturity, IERC1155MetadataURI {
     using Address for address;
     using TimeBalance for uint;
 
@@ -44,11 +44,10 @@ contract ERC1155Maturity is Context, ERC165, IERC1155, IERC1155MetadataURI, IERC
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return
             interfaceId == type(IERC1155).interfaceId ||
-            interfaceId == type(IERC1155MetadataURI).interfaceId ||
-            super.supportsInterface(interfaceId);
+            interfaceId == type(IERC1155MetadataURI).interfaceId;
     }
 
     /**
