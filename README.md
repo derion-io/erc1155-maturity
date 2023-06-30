@@ -9,7 +9,7 @@ The maturity feature creates a soft-lock effect for newly minted token balances.
 * A maturing position can be divided into smaller balances with the same maturity time.
 * A maturing position cannot be transferred or merged into a more mature position.
 * Merging two positions will result in a position with a later maturity time.
-* 
+
 The maturity time can be queried using the `IERC1155Maturity` interface:
 
 ```solidity
