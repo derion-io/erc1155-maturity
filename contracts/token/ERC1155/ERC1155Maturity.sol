@@ -83,6 +83,16 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
             "ERC1155: caller is not token owner or approved"
         );
 
+        _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function _safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) internal virtual {
         require(to != address(0), "ERC1155: transfer to the zero address");
 
         uint256 fromBalance = _balances[id][from];
