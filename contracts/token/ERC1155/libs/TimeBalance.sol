@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSL-1.1
 pragma solidity ^0.8.0;
 
-import "./SimpleMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 library TimeBalance {
     uint constant TIME_MAX = type(uint32).max;
@@ -16,15 +16,11 @@ library TimeBalance {
     }
 
     function amount(uint x) internal pure returns (uint) {
-        unchecked {
-            return x & BALANCE_MASK;
-        }
+        return x & BALANCE_MASK;
     }
 
     function locktime(uint x) internal pure returns (uint) {
-        unchecked {
-            return x >> 224;
-        }
+        return x >> 224;
     }
 
     function merge(uint x, uint y) internal view returns (uint z) {
@@ -32,7 +28,7 @@ library TimeBalance {
             if (x == 0) {
                 return y;
             }
-            uint xt = SimpleMath.max(block.timestamp, x >> 224);
+            uint xt = Math.max(block.timestamp, x >> 224);
             uint yt = y >> 224;
             require(yt <= xt, "Maturity: locktime order");
             uint yb = y & BALANCE_MASK;
