@@ -20,10 +20,13 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     /*//////////////////////////////////////////////////////////////
                              ERC1155 STORAGE
     //////////////////////////////////////////////////////////////*/
+    
+    // TODO: address first than uint
+    mapping(uint256 => uint256) internal _totalSupply;
 
     mapping(address => mapping(uint256 => uint256)) internal s_timeBalances;
 
-    mapping(address => mapping(address => bool)) public isApprovedForAll;
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     string private _uri;
 
@@ -47,11 +50,23 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     }
 
     /*//////////////////////////////////////////////////////////////
+                             SUPPLY LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function totalSupply(uint256 id) public view override virtual returns (uint256) {
+        return _totalSupply[id];
+    }
+
+    function exists(uint256 id) public view override virtual returns (bool) {
+        return totalSupply(id) > 0;
+    }
+
+    /*//////////////////////////////////////////////////////////////
                               ERC1155 LOGIC
     //////////////////////////////////////////////////////////////*/
 
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        isApprovedForAll[msg.sender][operator] = approved;
+        _operatorApprovals[msg.sender][operator] = approved;
 
         emit ApprovalForAll(msg.sender, operator, approved);
     }
@@ -64,7 +79,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes calldata data
     ) public virtual {
         require(to != address(0), "ZERO_RECIPIENT");
-        require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == from || isApprovedForAll(from, msg.sender), "NOT_AUTHORIZED");
         _safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -79,6 +94,18 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         uint timelockAmount;
         (s_timeBalances[from][id], timelockAmount) = fromBalance.split(amount);
         s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
+
+        if (from == address(0)) {
+            _totalSupply[id] += amount;
+        }
+
+        if (to == address(0)) {
+            uint256 supply = _totalSupply[id];
+            require(supply >= amount, "ERC1155: burn amount exceeds totalSupply");
+            unchecked {
+                _totalSupply[id] = supply - amount;
+            }
+        }
 
         emit TransferSingle(msg.sender, from, to, id, amount);
 
@@ -95,7 +122,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         require(to != address(0), "ZERO_RECIPIENT");
         require(ids.length == amounts.length, "LENGTH_MISMATCH");
 
-        require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == from || isApprovedForAll(from, msg.sender), "NOT_AUTHORIZED");
 
         // Storing these outside the loop saves ~15 gas per iteration.
         uint256 id;
@@ -113,6 +140,24 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
             // larger than the max uint256 value.
             unchecked {
                 ++i;
+            }
+        }
+
+        if (from == address(0)) {
+            for (uint256 i = 0; i < ids.length; ++i) {
+                _totalSupply[ids[i]] += amounts[i];
+            }
+        }
+
+        if (to == address(0)) {
+            for (uint256 i = 0; i < ids.length; ++i) {
+                id = ids[i];
+                amount = amounts[i];
+                uint256 supply = _totalSupply[id];
+                require(supply >= amount, "ERC1155: burn amount exceeds totalSupply");
+                unchecked {
+                    _totalSupply[id] = supply - amount;
+                }
             }
         }
 
@@ -142,6 +187,10 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
         return s_timeBalances[account][id].amount();
+    }
+
+    function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
+        return _operatorApprovals[account][operator];
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -194,6 +243,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ZERO_RECIPIENT");
+        _totalSupply[id] += amount;
         uint timelockAmount = TimeBalance.pack(amount, locktime);
         s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
@@ -215,6 +265,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         require(idsLength == amounts.length, "LENGTH_MISMATCH");
 
         for (uint256 i = 0; i < idsLength;) {
+            _totalSupply[ids[i]] += amounts[i];
             uint timelockAmount = TimeBalance.pack(amounts[i], locktime);
             s_timeBalances[to][ids[i]] = s_timeBalances[to][ids[i]].merge(timelockAmount);
 
@@ -239,14 +290,23 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         require(idsLength == amounts.length, "LENGTH_MISMATCH");
 
+        uint256 id;
+        uint256 amount;
+        uint256 supply;
+
         for (uint256 i = 0; i < idsLength; ) {
-            uint256 id = ids[i];
-            (s_timeBalances[from][id], ) = s_timeBalances[from][id].split(amounts[i]);
+            id = ids[i];
+            amount = amounts[i];
+            supply = _totalSupply[id];
+
+            (s_timeBalances[from][id], ) = s_timeBalances[from][id].split(amount);
+            require(supply >= amount, "ERC1155: burn amount exceeds totalSupply");
 
             // An array can't have a total length
             // larger than the max uint256 value.
             unchecked {
                 ++i;
+                _totalSupply[id] = supply - amount;
             }
         }
 
@@ -259,7 +319,11 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         uint256 amount
     ) internal virtual {
         (s_timeBalances[from][id],) = s_timeBalances[from][id].split(amount);
-
+        uint256 supply = _totalSupply[id];
+        require(supply >= amount, "ERC1155: burn amount exceeds totalSupply");
+        unchecked {
+            _totalSupply[id] = supply - amount;
+        }
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
 
