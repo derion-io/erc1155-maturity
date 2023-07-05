@@ -22,8 +22,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     //////////////////////////////////////////////////////////////*/
 
     mapping(address => mapping(uint256 => uint256)) internal s_timeBalances;
-
-    mapping(address => mapping(address => bool)) public isApprovedForAll;
+    mapping(address => mapping(address => bool)) internal s_approvals;
 
     string private _uri;
 
@@ -51,7 +50,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     //////////////////////////////////////////////////////////////*/
 
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        isApprovedForAll[msg.sender][operator] = approved;
+        s_approvals[msg.sender][operator] = approved;
 
         emit ApprovalForAll(msg.sender, operator, approved);
     }
@@ -64,7 +63,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes calldata data
     ) public virtual {
         require(to != address(0), "ZERO_RECIPIENT");
-        require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == from || s_approvals[from][msg.sender], "NOT_AUTHORIZED");
         _safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -95,7 +94,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         require(to != address(0), "ZERO_RECIPIENT");
         require(ids.length == amounts.length, "LENGTH_MISMATCH");
 
-        require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == from || s_approvals[from][msg.sender], "NOT_AUTHORIZED");
 
         // Storing these outside the loop saves ~15 gas per iteration.
         uint256 id;
@@ -142,6 +141,10 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
         return s_timeBalances[account][id].amount();
+    }
+
+    function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
+        return s_approvals[account][operator];
     }
 
     /*//////////////////////////////////////////////////////////////
