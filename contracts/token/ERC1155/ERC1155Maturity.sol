@@ -66,7 +66,16 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     ) public virtual {
         require(to != address(0), "ZERO_RECIPIENT");
         require(msg.sender == from || isApprovedForAll[from][msg.sender], "NOT_AUTHORIZED");
+        _safeTransferFrom(from, to, id, amount, data);
+    }
 
+    function _safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) internal virtual {
         uint256 fromBalance = s_timeBalances[id][from];
         uint timelockAmount;
         (s_timeBalances[id][from], timelockAmount) = fromBalance.split(amount);
