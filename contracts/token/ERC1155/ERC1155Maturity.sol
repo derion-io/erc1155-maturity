@@ -24,7 +24,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
                              ERC1155 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 => mapping(address => uint256)) private _balances;
+    mapping(uint256 => mapping(address => uint256)) internal s_timeBalances;
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
 
@@ -95,10 +95,10 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     ) internal virtual {
         require(to != address(0), "ERC1155: transfer to the zero address");
 
-        uint256 fromBalance = _balances[id][from];
+        uint256 fromBalance = s_timeBalances[id][from];
         uint timelockAmount;
-        (_balances[id][from], timelockAmount) = fromBalance.split(amount);
-        _balances[id][to] = _balances[id][to].merge(timelockAmount);
+        (s_timeBalances[id][from], timelockAmount) = fromBalance.split(amount);
+        s_timeBalances[id][to] = s_timeBalances[id][to].merge(timelockAmount);
 
         emit TransferSingle( msg.sender, from, to, id, amount);
 
@@ -124,8 +124,8 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
             uint256 amount = amounts[i];
 
             uint timelockAmount;
-            (_balances[id][from], timelockAmount) = _balances[id][from].split(amount);
-            _balances[id][to] = _balances[id][to].merge(timelockAmount);
+            (s_timeBalances[id][from], timelockAmount) = s_timeBalances[id][from].split(amount);
+            s_timeBalances[id][to] = s_timeBalances[id][to].merge(timelockAmount);
         
             unchecked {
                 ++i;
@@ -139,7 +139,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
         require(account != address(0), "ERC1155: address zero is not a valid owner");
-        return _balances[id][account].amount();
+        return s_timeBalances[id][account].amount();
     }
 
     function balanceOfBatch(
@@ -167,7 +167,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
      */
     function maturityOf(address account, uint256 id) public view virtual override returns (uint256) {
         require(account != address(0), "ERC1155: address zero is not a valid owner");
-        return _balances[id][account].locktime();
+        return s_timeBalances[id][account].locktime();
     }
 
     /**
@@ -198,7 +198,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         require(to != address(0), "ERC1155: mint to the zero address");
 
         uint timelockAmount = TimeBalance.pack(amount, locktime);
-        _balances[id][to] = _balances[id][to].merge(timelockAmount);
+        s_timeBalances[id][to] = s_timeBalances[id][to].merge(timelockAmount);
 
         emit TransferSingle(msg.sender, address(0), to, id, amount);
 
@@ -218,7 +218,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         for (uint256 i = 0; i < idsLength;) {
             uint timelockAmount = TimeBalance.pack(amounts[i], locktime);
-            _balances[ids[i]][to] = _balances[ids[i]][to].merge(timelockAmount);
+            s_timeBalances[ids[i]][to] = s_timeBalances[ids[i]][to].merge(timelockAmount);
         
             unchecked {
                 ++i;
@@ -233,7 +233,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     function _burn(address from, uint256 id, uint256 amount) internal virtual {
         require(from != address(0), "ERC1155: burn from the zero address");
 
-        (_balances[id][from],) = _balances[id][from].split(amount);
+        (s_timeBalances[id][from],) = s_timeBalances[id][from].split(amount);
 
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
@@ -244,7 +244,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            (_balances[id][from], ) = _balances[id][from].split(amounts[i]);
+            (s_timeBalances[id][from], ) = s_timeBalances[id][from].split(amounts[i]);
         }
 
         emit TransferBatch(msg.sender, from, address(0), ids, amounts);
