@@ -9,9 +9,6 @@ interface IERC1155Maturity is IERC1155 {
     /**
      * @dev Returns the maturity time of tokens of token type `id` owned by `account`.
      *
-     * Requirements:
-     *
-     * - `account` cannot be the zero address.
      */
     function maturityOf(address account, uint256 id) external view returns (uint256);
 

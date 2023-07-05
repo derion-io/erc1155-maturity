@@ -32,7 +32,7 @@ contract('ERC1155', function (accounts) {
       it('reverts with a zero destination address', async function () {
         await expectRevert(
           this.token.$_mint(ZERO_ADDRESS, tokenId, mintAmount, 0, data),
-          'ERC1155: mint to the zero address',
+          'ZERO_RECIPIENT',
         );
       });
 
@@ -60,26 +60,26 @@ contract('ERC1155', function (accounts) {
     describe('_mintBatch', function () {
       it('reverts with a zero destination address', async function () {
         await expectRevert(
-          this.token.$_mintBatch(ZERO_ADDRESS, tokenBatchIds, mintAmounts, 0, data),
-          'ERC1155: mint to the zero address',
+          this.token.$_batchMint(ZERO_ADDRESS, tokenBatchIds, mintAmounts, 0, data),
+          'ZERO_RECIPIENT',
         );
       });
 
       it('reverts if length of inputs do not match', async function () {
         await expectRevert(
-          this.token.$_mintBatch(tokenBatchHolder, tokenBatchIds, mintAmounts.slice(1), 0, data),
-          'ERC1155: ids and amounts length mismatch',
+          this.token.$_batchMint(tokenBatchHolder, tokenBatchIds, mintAmounts.slice(1), 0, data),
+          'LENGTH_MISMATCH',
         );
 
         await expectRevert(
-          this.token.$_mintBatch(tokenBatchHolder, tokenBatchIds.slice(1), mintAmounts, 0, data),
-          'ERC1155: ids and amounts length mismatch',
+          this.token.$_batchMint(tokenBatchHolder, tokenBatchIds.slice(1), mintAmounts, 0, data),
+          'LENGTH_MISMATCH',
         );
       });
 
       context('with minted batch of tokens', function () {
         beforeEach(async function () {
-          this.receipt = await this.token.$_mintBatch(tokenBatchHolder, tokenBatchIds, mintAmounts, 0, data, {
+          this.receipt = await this.token.$_batchMint(tokenBatchHolder, tokenBatchIds, mintAmounts, 0, data, {
             from: operator,
           });
         });
@@ -106,10 +106,6 @@ contract('ERC1155', function (accounts) {
     });
 
     describe('_burn', function () {
-      it("reverts when burning the zero account's tokens", async function () {
-        await expectRevert(this.token.$_burn(ZERO_ADDRESS, tokenId, mintAmount), 'ERC1155: burn from the zero address');
-      });
-
       it('reverts when burning a non-existent token id', async function () {
         await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'Maturity: insufficient balance');
       });
@@ -146,36 +142,29 @@ contract('ERC1155', function (accounts) {
     });
 
     describe('_burnBatch', function () {
-      it("reverts when burning the zero account's tokens", async function () {
-        await expectRevert(
-          this.token.$_burnBatch(ZERO_ADDRESS, tokenBatchIds, burnAmounts),
-          'ERC1155: burn from the zero address',
-        );
-      });
-
       it('reverts if length of inputs do not match', async function () {
         await expectRevert(
-          this.token.$_burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts.slice(1)),
-          'ERC1155: ids and amounts length mismatch',
+          this.token.$_batchBurn(tokenBatchHolder, tokenBatchIds, burnAmounts.slice(1)),
+          'LENGTH_MISMATCH',
         );
 
         await expectRevert(
-          this.token.$_burnBatch(tokenBatchHolder, tokenBatchIds.slice(1), burnAmounts),
-          'ERC1155: ids and amounts length mismatch',
+          this.token.$_batchBurn(tokenBatchHolder, tokenBatchIds.slice(1), burnAmounts),
+          'LENGTH_MISMATCH',
         );
       });
 
       it('reverts when burning a non-existent token id', async function () {
         await expectRevert(
-          this.token.$_burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts),
+          this.token.$_batchBurn(tokenBatchHolder, tokenBatchIds, burnAmounts),
           'Maturity: insufficient balance',
         );
       });
 
       context('with minted-then-burnt tokens', function () {
         beforeEach(async function () {
-          await this.token.$_mintBatch(tokenBatchHolder, tokenBatchIds, mintAmounts, 0, data);
-          this.receipt = await this.token.$_burnBatch(tokenBatchHolder, tokenBatchIds, burnAmounts, { from: operator });
+          await this.token.$_batchMint(tokenBatchHolder, tokenBatchIds, mintAmounts, 0, data);
+          this.receipt = await this.token.$_batchBurn(tokenBatchHolder, tokenBatchIds, burnAmounts, { from: operator });
         });
 
         it('emits a TransferBatch event', function () {
