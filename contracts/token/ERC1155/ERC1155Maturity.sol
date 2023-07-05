@@ -21,8 +21,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
                              ERC1155 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // TODO: address first than uint
-    mapping(uint256 => mapping(address => uint256)) internal s_timeBalances;
+    mapping(address => mapping(uint256 => uint256)) internal s_timeBalances;
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
 
@@ -76,10 +75,10 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         uint256 amount,
         bytes memory data
     ) internal virtual {
-        uint256 fromBalance = s_timeBalances[id][from];
+        uint256 fromBalance = s_timeBalances[from][id];
         uint timelockAmount;
-        (s_timeBalances[id][from], timelockAmount) = fromBalance.split(amount);
-        s_timeBalances[id][to] = s_timeBalances[id][to].merge(timelockAmount);
+        (s_timeBalances[from][id], timelockAmount) = fromBalance.split(amount);
+        s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
         emit TransferSingle(msg.sender, from, to, id, amount);
 
@@ -107,8 +106,8 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
             amount = amounts[i];
 
             uint timelockAmount;
-            (s_timeBalances[id][from], timelockAmount) = s_timeBalances[id][from].split(amount);
-            s_timeBalances[id][to] = s_timeBalances[id][to].merge(timelockAmount);
+            (s_timeBalances[from][id], timelockAmount) = s_timeBalances[from][id].split(amount);
+            s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -142,7 +141,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     }
 
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
-        return s_timeBalances[id][account].amount();
+        return s_timeBalances[account][id].amount();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -160,7 +159,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
                               MATURITY LOGIC
     //////////////////////////////////////////////////////////////*/
     function maturityOf(address account, uint256 id) public view virtual override returns (uint256) {
-        return s_timeBalances[id][account].locktime();
+        return s_timeBalances[account][id].locktime();
     }
 
     /**
@@ -196,7 +195,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     ) internal virtual {
         require(to != address(0), "ZERO_RECIPIENT");
         uint timelockAmount = TimeBalance.pack(amount, locktime);
-        s_timeBalances[id][to] = s_timeBalances[id][to].merge(timelockAmount);
+        s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
         emit TransferSingle(msg.sender, address(0), to, id, amount);
 
@@ -217,7 +216,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         for (uint256 i = 0; i < idsLength;) {
             uint timelockAmount = TimeBalance.pack(amounts[i], locktime);
-            s_timeBalances[ids[i]][to] = s_timeBalances[ids[i]][to].merge(timelockAmount);
+            s_timeBalances[to][ids[i]] = s_timeBalances[to][ids[i]].merge(timelockAmount);
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -242,7 +241,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         for (uint256 i = 0; i < idsLength; ) {
             uint256 id = ids[i];
-            (s_timeBalances[id][from], ) = s_timeBalances[id][from].split(amounts[i]);
+            (s_timeBalances[from][id], ) = s_timeBalances[from][id].split(amounts[i]);
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -259,7 +258,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         uint256 id,
         uint256 amount
     ) internal virtual {
-        (s_timeBalances[id][from],) = s_timeBalances[id][from].split(amount);
+        (s_timeBalances[from][id],) = s_timeBalances[from][id].split(amount);
 
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
