@@ -24,6 +24,8 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     mapping(address => mapping(uint256 => uint256)) internal s_timeBalances;
     mapping(address => mapping(address => bool)) internal s_approvals;
 
+    mapping(uint256 => uint256) internal s_totalSupply;
+
     string private _uri;
 
     /**
@@ -43,6 +45,14 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
     function _setURI(string memory newuri) internal virtual {
         _uri = newuri;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                             SUPPLY LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function totalSupply(uint256 id) public view override virtual returns (uint256) {
+        return s_totalSupply[id];
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -92,20 +102,19 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes calldata data
     ) public virtual {
         require(to != address(0), "ZERO_RECIPIENT");
-        require(ids.length == amounts.length, "LENGTH_MISMATCH");
+        uint256 idsLength = ids.length; // Saves MLOADs.
+        require(idsLength == amounts.length, "LENGTH_MISMATCH");
 
         require(msg.sender == from || s_approvals[from][msg.sender], "NOT_AUTHORIZED");
 
         // Storing these outside the loop saves ~15 gas per iteration.
         uint256 id;
-        uint256 amount;
 
-        for (uint256 i = 0; i < ids.length; ) {
+        for (uint256 i = 0; i < idsLength; ) {
             id = ids[i];
-            amount = amounts[i];
 
             uint timelockAmount;
-            (s_timeBalances[from][id], timelockAmount) = s_timeBalances[from][id].split(amount);
+            (s_timeBalances[from][id], timelockAmount) = s_timeBalances[from][id].split(amounts[i]);
             s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
             // An array can't have a total length
@@ -199,6 +208,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         require(to != address(0), "ZERO_RECIPIENT");
         uint timelockAmount = TimeBalance.pack(amount, locktime);
         s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
+        s_totalSupply[id] += amount;
 
         emit TransferSingle(msg.sender, address(0), to, id, amount);
 
@@ -217,9 +227,17 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         require(idsLength == amounts.length, "LENGTH_MISMATCH");
 
+        // Storing these outside the loop saves ~15 gas per iteration.
+        uint256 id;
+        uint256 amount;
+
         for (uint256 i = 0; i < idsLength;) {
-            uint timelockAmount = TimeBalance.pack(amounts[i], locktime);
-            s_timeBalances[to][ids[i]] = s_timeBalances[to][ids[i]].merge(timelockAmount);
+            id = ids[i];
+            amount = amounts[i];
+
+            uint timelockAmount = TimeBalance.pack(amount, locktime);
+            s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
+            s_totalSupply[id] += amount;
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -242,9 +260,16 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
 
         require(idsLength == amounts.length, "LENGTH_MISMATCH");
 
+        // Storing these outside the loop saves ~15 gas per iteration.
+        uint256 id;
+        uint256 amount;
+
         for (uint256 i = 0; i < idsLength; ) {
-            uint256 id = ids[i];
-            (s_timeBalances[from][id], ) = s_timeBalances[from][id].split(amounts[i]);
+            id = ids[i];
+            amount = amounts[i];
+
+            (s_timeBalances[from][id], ) = s_timeBalances[from][id].split(amount);
+            s_totalSupply[id] -= amount;
 
             // An array can't have a total length
             // larger than the max uint256 value.
@@ -262,6 +287,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         uint256 amount
     ) internal virtual {
         (s_timeBalances[from][id],) = s_timeBalances[from][id].split(amount);
+        s_totalSupply[id] -= amount;
 
         emit TransferSingle(msg.sender, from, address(0), id, amount);
     }
