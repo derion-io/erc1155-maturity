@@ -73,7 +73,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes calldata data
     ) public virtual {
         require(to != address(0), "ZERO_RECIPIENT");
-        require(msg.sender == from || s_approvals[from][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == from || isApprovedForAll(from, msg.sender), "NOT_AUTHORIZED");
         _safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -105,7 +105,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         uint256 idsLength = ids.length; // Saves MLOADs.
         require(idsLength == amounts.length, "LENGTH_MISMATCH");
 
-        require(msg.sender == from || s_approvals[from][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == from || isApprovedForAll(from, msg.sender), "NOT_AUTHORIZED");
 
         // Storing these outside the loop saves ~15 gas per iteration.
         uint256 id;
