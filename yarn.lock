@@ -38,10 +38,9 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
-"@derivable/utr@git+ssh://git@github.com:derivable-labs/utr.git":
+"@derivable/utr@https://github.com/derivable-labs/utr.git":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/derivable-labs/utr.git#f38beb53de9b6f4773b7d59d387501885879de23"
-  integrity sha512-q9+DB+FkA0V9LWw6+mQuLaHLH985yKyu4gHOwC/zKi+dEewIvbq+oOX/V0w6VGNo3hwsI96aCPiBVLxpRMqmiA==
+  resolved "https://github.com/derivable-labs/utr.git#abad4c5e598bb89edafacb8da57f31d8d8aae331"
   dependencies:
     "@atixlabs/hardhat-time-n-mine" "^0.0.5"
     "@uniswap/lib" "^4.0.1-alpha"
