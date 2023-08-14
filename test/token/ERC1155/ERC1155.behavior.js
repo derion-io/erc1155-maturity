@@ -4,6 +4,7 @@ const { ZERO_ADDRESS } = constants;
 const { expect } = require('chai');
 
 const ERC1155ReceiverMock = artifacts.require('ERC1155ReceiverMock');
+const NonReceiver = artifacts.require('NonReceiver');
 
 function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, multiTokenHolder, recipient, proxy]) {
   const firstTokenId = new BN(1);
@@ -262,7 +263,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false,
+            false
           );
         });
 
@@ -353,7 +354,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             true,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false,
+            false
           );
         });
 
@@ -363,6 +364,21 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
               from: multiTokenHolder,
             }),
             'ERC1155ReceiverMock: reverting on receive',
+          );
+        });
+      });
+
+      context('to a receiver contract that non receiver', function () {
+        beforeEach(async function () {
+          this.receiver = await NonReceiver.new();
+        });
+
+        it('reverts', async function () {
+          await expectRevert(
+            this.token.safeTransferFrom(multiTokenHolder, this.receiver.address, firstTokenId, firstAmount, '0x', {
+              from: multiTokenHolder,
+            }),
+            'NON_RECEIVER',
           );
         });
       });
@@ -547,7 +563,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false,
+            false
           );
         });
 
@@ -623,7 +639,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_SINGLE_MAGIC_VALUE,
-            false,
+            false
           );
         });
 
@@ -648,7 +664,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_BATCH_MAGIC_VALUE,
-            true,
+            true
           );
         });
 
@@ -667,13 +683,33 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
         });
       });
 
+      context('to a receiver contract that non receiver', function () {
+        beforeEach(async function () {
+          this.receiver = await NonReceiver.new();
+        });
+
+        it('reverts', async function () {
+          await expectRevert(
+            this.token.safeBatchTransferFrom(
+              multiTokenHolder,
+              this.receiver.address,
+              [firstTokenId, secondTokenId],
+              [firstAmount, secondAmount],
+              '0x',
+              { from: multiTokenHolder },
+            ),
+            'NON_RECEIVER',
+          );
+        });
+      });
+
       context('to a receiver contract that reverts only on single transfers', function () {
         beforeEach(async function () {
           this.receiver = await ERC1155ReceiverMock.new(
             RECEIVER_SINGLE_MAGIC_VALUE,
             true,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false,
+            false
           );
 
           this.toWhom = this.receiver.address;

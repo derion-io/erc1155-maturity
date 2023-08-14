@@ -79,6 +79,12 @@ contract('Maturity', function () {
             await this.token.$_mint(this.accA.address, tokenId, mintAmount, lockTime, data);
         });
 
+        it('maturityOf and maturityOfBatch should return exact value', async function () {
+            const expectedMaturity = expiration.add(await time.latest() - 1)
+            expect(await this.token.maturityOf(this.accA.address, tokenId)).to.eq(expectedMaturity)
+            expect((await this.token.maturityOfBatch([this.accA.address], [tokenId]))[0]).to.eq(expectedMaturity)
+        })
+
         describe('safeTransferFrom partly fungible', function () {
             it('Transfer to an empty account with same lock time', async function () {
                 await this.token.connect(this.accA).safeTransferFrom(

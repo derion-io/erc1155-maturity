@@ -221,4 +221,10 @@ contract('ERC1155', function (accounts) {
       });
     });
   });
+
+  it('supportsInterface', async function () {
+    expect(await this.token.supportsInterface('0x01ffc9a7')).to.be.equal(true);
+    expect(await this.token.supportsInterface('0xd9b67a26')).to.be.equal(true);
+    expect(await this.token.supportsInterface('0x0e89341c')).to.be.equal(true);
+  });
 });
