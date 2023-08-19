@@ -1,14 +1,14 @@
 # ERC-1155 Maturity
 
-ERC-1155 Maturity is an implementation of [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155) that reduces the token balance size to `uint192` (from `uint256`) and adds an `uint32` maturity time.
+ERC-1155 Maturity is an implementation of [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155) that reduces the token balance size to `uint224` (from `uint256`) and adds an `uint32` maturity time.
 
-The maturity feature creates a soft-lock effect for newly minted token balances. Once the maturity time has elapsed, the position becomes matured and fully fungible. However, until that time, the balance is only partly fungible and subject to the following rules:
+The maturity feature creates a soft-lock effect for newly minted token balances. Once the maturity time has elapsed, the balance becomes matured and fully fungible. However, until that time, the balance is only partly fungible and subject to the following rules:
 
 * A zero balance is a fully matured balance.
 * A balance with a maturity time equal to or older than `block.timestamp` is a fully matured balance.
-* A maturing position can be divided into smaller balances with the same maturity time.
-* A maturing position cannot be transferred or merged into a more mature position.
-* Merging two positions will result in a position with a later maturity time.
+* A maturing balance can be divided into smaller balances with the same maturity time.
+* A less matured balance cannot be transferred or merged into a more mature balance.
+* A more mature balance can be transferred to and merged into a less matured balance, resulting in a balance with a later maturity time.
 
 The maturity time can be queried using the `IERC1155Maturity` interface:
 
