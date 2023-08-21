@@ -36,10 +36,6 @@ contract('ERC1155Supply', function (accounts) {
       it('totalSupply', async function () {
         expect(await this.token.methods['totalSupply(uint256)'](firstTokenId)).to.be.bignumber.equal(firstTokenValue);
       });
-
-      it('exists', async function () {
-        expect(await this.token.methods['exists(uint256)'](firstTokenId)).to.be.equal(true);
-      });
     });
 
     context('batch', function () {
@@ -63,10 +59,6 @@ contract('ERC1155Supply', function (accounts) {
 
       it('totalSupply', async function () {
         expect(await this.token.methods['totalSupply(uint256)'](firstTokenId)).to.be.bignumber.equal('0');
-      });
-
-      it('exists', async function () {
-        expect(await this.token.methods['exists(uint256)'](firstTokenId)).to.be.equal(false);
       });
     });
 
