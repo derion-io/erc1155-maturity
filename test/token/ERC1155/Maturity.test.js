@@ -79,6 +79,12 @@ contract('Maturity', function () {
             await this.token.$_mint(this.accA.address, tokenId, mintAmount, lockTime, data);
         });
 
+        it('maturityOfBatch reverts when accounts and ids length mismatch', async function () {
+            await expect(
+                this.token.maturityOfBatch([], [tokenId])
+            ).to.be.revertedWith('LENGTH_MISMATCH')
+        })
+
         it('maturityOf and maturityOfBatch should return exact value', async function () {
             const expectedMaturity = expiration.add(await time.latest() - 1)
             expect(await this.token.maturityOf(this.accA.address, tokenId)).to.eq(expectedMaturity)
