@@ -4,7 +4,6 @@ const { expect, use } = require('chai');
 const { solidity } = require('ethereum-waffle');
 use(solidity);
 
-const UTR = require('@derivable/utr/build/UniversalTokenRouter.json');
 const bn = ethers.BigNumber.from;
 
 contract('Maturity', function () {
@@ -19,9 +18,6 @@ contract('Maturity', function () {
         this.accA = accountA;
         this.accB = accountB;
         this.accC = accountC;
-
-        const UniversalRouter = new ethers.ContractFactory(UTR.abi, UTR.bytecode, accountA)
-        this.utr = await UniversalRouter.deploy()
     });
     describe('Overflow balance', function () {
         const tokenId = bn(1990);
@@ -105,22 +101,10 @@ contract('Maturity', function () {
             });
             it('Merge two position will result in a position with a later maturity time', async function () {
                 const curTime = await time.latest();
-                await this.utr.exec([], [
-                    {
-                        inputs: [],
-                        code: this.tokenAddress,
-                        data: (await this.token.populateTransaction.$_mint(
-                            this.accB.address, tokenId, mintAmount.mul(2), bn(30).add(curTime), data
-                        )).data,
-                    },
-                    {
-                        inputs: [],
-                        code: this.tokenAddress,
-                        data: (await this.token.populateTransaction.$_mint(
-                            this.accB.address, tokenId, mintAmount, bn(10).add(curTime), data
-                        )).data,
-                    }
-                ]);
+                await Promise.all([
+                    this.token.$_mint(this.accB.address, tokenId, mintAmount.mul(2), bn(30).add(curTime), data),
+                    this.token.$_mint(this.accB.address, tokenId, mintAmount, bn(10).add(curTime), data),
+                ])
                 expect(await this.token.maturityOf(this.accB.address, tokenId)).to.be.equal(bn(30).add(curTime))
             });
             it("A maturing position cannot be transferred or merged into a more matured position", async function () {
