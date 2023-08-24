@@ -30,10 +30,7 @@ contract('ERC1155', function (accounts) {
 
     describe('_mint', function () {
       it('reverts with a zero destination address', async function () {
-        await expectRevert(
-          this.token.$_mint(ZERO_ADDRESS, tokenId, mintAmount, 0, data),
-          'ZERO_RECIPIENT',
-        );
+        await expectRevert(this.token.$_mint(ZERO_ADDRESS, tokenId, mintAmount, 0, data), 'ZERO_RECIPIENT');
       });
 
       context('with minted tokens', function () {
@@ -59,10 +56,7 @@ contract('ERC1155', function (accounts) {
 
     describe('_mintBatch', function () {
       it('reverts with a zero destination address', async function () {
-        await expectRevert(
-          this.token.$_batchMint(ZERO_ADDRESS, tokenBatchIds, mintAmounts, 0, data),
-          'ZERO_RECIPIENT',
-        );
+        await expectRevert(this.token.$_batchMint(ZERO_ADDRESS, tokenBatchIds, mintAmounts, 0, data), 'ZERO_RECIPIENT');
       });
 
       it('reverts if length of inputs do not match', async function () {

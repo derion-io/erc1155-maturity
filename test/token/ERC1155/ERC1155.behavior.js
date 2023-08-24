@@ -272,7 +272,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false
+            false,
           );
         });
 
@@ -363,7 +363,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             true,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false
+            false,
           );
         });
 
@@ -572,7 +572,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false
+            false,
           );
         });
 
@@ -648,7 +648,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_SINGLE_MAGIC_VALUE,
-            false
+            false,
           );
         });
 
@@ -673,7 +673,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             false,
             RECEIVER_BATCH_MAGIC_VALUE,
-            true
+            true,
           );
         });
 
@@ -718,7 +718,7 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
             RECEIVER_SINGLE_MAGIC_VALUE,
             true,
             RECEIVER_BATCH_MAGIC_VALUE,
-            false
+            false,
           );
 
           this.toWhom = this.receiver.address;
@@ -767,7 +767,6 @@ function shouldBehaveLikeERC1155([minter, firstTokenHolder, secondTokenHolder, m
         });
       });
     });
-
   });
 }
 

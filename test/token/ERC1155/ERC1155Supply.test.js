@@ -1,8 +1,6 @@
-const { BN, constants } = require('@openzeppelin/test-helpers');
+const { BN } = require('@openzeppelin/test-helpers');
 
 const { expect } = require('chai');
-
-const { ZERO_ADDRESS } = constants;
 
 const ERC1155Supply = artifacts.require('$ERC1155Maturity');
 
@@ -40,7 +38,13 @@ contract('ERC1155Supply', function (accounts) {
 
     context('batch', function () {
       beforeEach(async function () {
-        await this.token.$_batchMint(holder, [firstTokenId, secondTokenId], [firstTokenValue, secondTokenValue], 0, '0x');
+        await this.token.$_batchMint(
+          holder,
+          [firstTokenId, secondTokenId],
+          [firstTokenValue, secondTokenValue],
+          0,
+          '0x',
+        );
       });
 
       it('totalSupply', async function () {
@@ -64,7 +68,13 @@ contract('ERC1155Supply', function (accounts) {
 
     context('batch', function () {
       beforeEach(async function () {
-        await this.token.$_batchMint(holder, [firstTokenId, secondTokenId], [firstTokenValue, secondTokenValue], 0, '0x');
+        await this.token.$_batchMint(
+          holder,
+          [firstTokenId, secondTokenId],
+          [firstTokenValue, secondTokenValue],
+          0,
+          '0x',
+        );
         await this.token.$_batchBurn(holder, [firstTokenId, secondTokenId], [firstTokenValue, secondTokenValue]);
       });
 
