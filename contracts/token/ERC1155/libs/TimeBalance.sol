@@ -4,44 +4,44 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 library TimeBalance {
-    uint constant TIME_MAX = type(uint32).max;
-    uint constant TIME_MASK = TIME_MAX << 224;
-    uint constant BALANCE_MAX = type(uint224).max;
-    uint constant BALANCE_MASK = BALANCE_MAX;
+    uint256 constant TIME_MAX = type(uint32).max;
+    uint256 constant TIME_MASK = TIME_MAX << 224;
+    uint256 constant BALANCE_MAX = type(uint224).max;
+    uint256 constant BALANCE_MASK = BALANCE_MAX;
 
-    function pack(uint b, uint t) internal pure returns (uint) {
+    function pack(uint256 b, uint256 t) internal pure returns (uint256) {
         require(t <= type(uint32).max, "Maturity: t overflow");
         require(b <= BALANCE_MAX, "Maturity: b overflow");
         return (t << 224) | b;
     }
 
-    function amount(uint x) internal pure returns (uint) {
+    function amount(uint256 x) internal pure returns (uint256) {
         return x & BALANCE_MASK;
     }
 
-    function locktime(uint x) internal pure returns (uint) {
+    function locktime(uint256 x) internal pure returns (uint256) {
         return x >> 224;
     }
 
-    function merge(uint x, uint y) internal view returns (uint z) {
+    function merge(uint256 x, uint256 y) internal view returns (uint256 z) {
         unchecked {
             if (x == 0) {
                 return y;
             }
-            uint xt = Math.max(block.timestamp, x >> 224);
-            uint yt = y >> 224;
+            uint256 xt = Math.max(block.timestamp, x >> 224);
+            uint256 yt = y >> 224;
             require(yt <= xt, "Maturity: locktime order");
-            uint yb = y & BALANCE_MASK;
-            uint xb = x & BALANCE_MASK;
-            uint zb = xb + yb;
+            uint256 yb = y & BALANCE_MASK;
+            uint256 xb = x & BALANCE_MASK;
+            uint256 zb = xb + yb;
             require(zb <= BALANCE_MAX, "Maturity: zb overflow");
             return x + yb;
         }
     }
 
-    function split(uint z, uint yb) internal pure returns (uint x, uint y) {
+    function split(uint256 z, uint256 yb) internal pure returns (uint256 x, uint256 y) {
         unchecked {
-            uint zb = z & BALANCE_MASK;
+            uint256 zb = z & BALANCE_MASK;
             if (zb == yb) {
                 return (0, z); // full transfer
             }
