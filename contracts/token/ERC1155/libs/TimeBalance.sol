@@ -9,20 +9,6 @@ library TimeBalance {
     uint256 constant BALANCE_MAX = type(uint224).max;
     uint256 constant BALANCE_MASK = BALANCE_MAX;
 
-    function pack(uint256 b, uint256 t) internal pure returns (uint256) {
-        require(t <= type(uint32).max, "Maturity: t overflow");
-        require(b <= BALANCE_MAX, "Maturity: b overflow");
-        return (t << 224) | b;
-    }
-
-    function amount(uint256 x) internal pure returns (uint256) {
-        return x & BALANCE_MASK;
-    }
-
-    function locktime(uint256 x) internal pure returns (uint256) {
-        return x >> 224;
-    }
-
     function merge(uint256 x, uint256 y) internal view returns (uint256 z) {
         unchecked {
             if (x == 0) {
@@ -37,6 +23,20 @@ library TimeBalance {
             require(zb <= BALANCE_MAX, "Maturity: zb overflow");
             return x + yb;
         }
+    }
+
+    function pack(uint256 b, uint256 t) internal pure returns (uint256) {
+        require(t <= type(uint32).max, "Maturity: t overflow");
+        require(b <= BALANCE_MAX, "Maturity: b overflow");
+        return (t << 224) | b;
+    }
+
+    function amount(uint256 x) internal pure returns (uint256) {
+        return x & BALANCE_MASK;
+    }
+
+    function locktime(uint256 x) internal pure returns (uint256) {
+        return x >> 224;
     }
 
     function split(uint256 z, uint256 yb) internal pure returns (uint256 x, uint256 y) {
