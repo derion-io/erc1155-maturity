@@ -13,7 +13,7 @@ import "./libs/TimeBalance.sol";
 
 /// @notice Minimalist and gas efficient standard ERC1155 implementation.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC1155.sol)
-/// @author Derivable (https://github.com/derivable-labs/erc1155-maturity/blob/main/contracts/token/ERC1155/ERC1155Maturity.sol)
+/// @author Derivable (https://github.com/derivable-labs/erc1155-maturity)
 contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     using TimeBalance for uint;
 
