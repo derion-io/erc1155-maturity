@@ -35,12 +35,12 @@ contract('Maturity', function () {
           await this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data);
           await expect(
             this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data),
-          ).to.be.revertedWith('Maturity: zb overflow');
+          ).to.be.revertedWith('NEW_BALANCE_OVERFLOW');
           await expect(this.token.$_mint(this.accB.address, tokenId, uintMaxDiv2, lockTime, data)).to.be.revertedWith(
-            'Maturity: b overflow',
+            'BALANCE_OVERFLOW',
           );
           await expect(this.token.$_mint(this.accB.address, tokenId, uintMaxDiv2, lockTime, data)).to.be.revertedWith(
-            'Maturity: b overflow',
+            'BALANCE_OVERFLOW',
           );
         },
       );
@@ -56,14 +56,14 @@ contract('Maturity', function () {
           await this.token.$_mint(this.accC.address, tokenId, uint224MaxDiv2, lockTime, data);
           await expect(
             this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data),
-          ).to.be.revertedWith('Maturity: zb overflow');
+          ).to.be.revertedWith('NEW_BALANCE_OVERFLOW');
         },
       );
 
       it('Maturity overflow must be revert', async function () {
         const MAXUINT32 = 4294967296;
         await expect(this.token.$_mint(this.accA.address, tokenId, uint224MaxDiv2, MAXUINT32, data)).to.be.revertedWith(
-          'Maturity: t overflow',
+          'TIME_OVERFLOW',
         );
       });
     });
@@ -115,11 +115,11 @@ contract('Maturity', function () {
           this.token
             .connect(this.accB)
             .safeTransferFrom(this.accB.address, this.accA.address, tokenId, mintAmount, data),
-        ).to.be.revertedWith('Maturity: locktime order');
+        ).to.be.revertedWith('MATURITY_ORDER');
 
         await expect(
           this.token.$_mint(this.accB.address, tokenId, mintAmount, curTime.add(1000), data),
-        ).to.be.revertedWith('Maturity: locktime order');
+        ).to.be.revertedWith('MATURITY_ORDER');
       });
     });
   });

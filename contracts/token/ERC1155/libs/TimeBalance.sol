@@ -16,18 +16,18 @@ library TimeBalance {
             }
             uint256 xTime = Math.max(block.timestamp, x >> 224);
             uint256 yTime = y >> 224;
-            require(yTime <= xTime, "Maturity: locktime order");
+            require(yTime <= xTime, "MATURITY_ORDER");
             uint256 yBalance = y & BALANCE_MASK;
             uint256 xBalance = x & BALANCE_MASK;
             uint256 zBalance = xBalance + yBalance;
-            require(zBalance <= BALANCE_MAX, "Maturity: zb overflow");
+            require(zBalance <= BALANCE_MAX, "NEW_BALANCE_OVERFLOW");
             return x + yBalance;
         }
     }
 
     function pack(uint256 balance, uint256 time) internal pure returns (uint256) {
-        require(time <= type(uint32).max, "Maturity: t overflow");
-        require(balance <= BALANCE_MAX, "Maturity: b overflow");
+        require(time <= type(uint32).max, "TIME_OVERFLOW");
+        require(balance <= BALANCE_MAX, "BALANCE_OVERFLOW");
         return (time << 224) | balance;
     }
 
@@ -45,7 +45,7 @@ library TimeBalance {
             if (zBalance == yBalance) {
                 return (0, z); // full transfer
             }
-            require(zBalance > yBalance, "Maturity: insufficient balance");
+            require(zBalance > yBalance, "INSUFFICIENT_BALANCE");
             x = z - yBalance; // preserve the locktime
             y = (z & TIME_MASK) | yBalance;
         }

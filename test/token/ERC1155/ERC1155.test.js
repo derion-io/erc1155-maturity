@@ -101,7 +101,7 @@ contract('ERC1155', function (accounts) {
 
     describe('_burn', function () {
       it('reverts when burning a non-existent token id', async function () {
-        await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'Maturity: insufficient balance');
+        await expectRevert(this.token.$_burn(tokenHolder, tokenId, mintAmount), 'INSUFFICIENT_BALANCE');
       });
 
       it('reverts when burning more than available tokens', async function () {
@@ -109,7 +109,7 @@ contract('ERC1155', function (accounts) {
 
         await expectRevert(
           this.token.$_burn(tokenHolder, tokenId, mintAmount.addn(1)),
-          'Maturity: insufficient balance',
+          'INSUFFICIENT_BALANCE',
         );
       });
 
@@ -151,7 +151,7 @@ contract('ERC1155', function (accounts) {
       it('reverts when burning a non-existent token id', async function () {
         await expectRevert(
           this.token.$_batchBurn(tokenBatchHolder, tokenBatchIds, burnAmounts),
-          'Maturity: insufficient balance',
+          'INSUFFICIENT_BALANCE',
         );
       });
 
