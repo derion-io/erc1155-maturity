@@ -14,21 +14,21 @@ library TimeBalance {
             if (x == 0) {
                 return y;
             }
-            uint256 xt = Math.max(block.timestamp, x >> 224);
-            uint256 yt = y >> 224;
-            require(yt <= xt, "Maturity: locktime order");
-            uint256 yb = y & BALANCE_MASK;
-            uint256 xb = x & BALANCE_MASK;
-            uint256 zb = xb + yb;
-            require(zb <= BALANCE_MAX, "Maturity: zb overflow");
-            return x + yb;
+            uint256 xTime = Math.max(block.timestamp, x >> 224);
+            uint256 yTime = y >> 224;
+            require(yTime <= xTime, "Maturity: locktime order");
+            uint256 yBalance = y & BALANCE_MASK;
+            uint256 xBalance = x & BALANCE_MASK;
+            uint256 zBalance = xBalance + yBalance;
+            require(zBalance <= BALANCE_MAX, "Maturity: zb overflow");
+            return x + yBalance;
         }
     }
 
-    function pack(uint256 b, uint256 t) internal pure returns (uint256) {
-        require(t <= type(uint32).max, "Maturity: t overflow");
-        require(b <= BALANCE_MAX, "Maturity: b overflow");
-        return (t << 224) | b;
+    function pack(uint256 balance, uint256 time) internal pure returns (uint256) {
+        require(time <= type(uint32).max, "Maturity: t overflow");
+        require(balance <= BALANCE_MAX, "Maturity: b overflow");
+        return (time << 224) | balance;
     }
 
     function amount(uint256 x) internal pure returns (uint256) {
@@ -39,15 +39,15 @@ library TimeBalance {
         return x >> 224;
     }
 
-    function split(uint256 z, uint256 yb) internal pure returns (uint256 x, uint256 y) {
+    function split(uint256 z, uint256 yBalance) internal pure returns (uint256 x, uint256 y) {
         unchecked {
-            uint256 zb = z & BALANCE_MASK;
-            if (zb == yb) {
+            uint256 zBalance = z & BALANCE_MASK;
+            if (zBalance == yBalance) {
                 return (0, z); // full transfer
             }
-            require(zb > yb, "Maturity: insufficient balance");
-            x = z - yb; // preserve the locktime
-            y = (z & TIME_MASK) | yb;
+            require(zBalance > yBalance, "Maturity: insufficient balance");
+            x = z - yBalance; // preserve the locktime
+            y = (z & TIME_MASK) | yBalance;
         }
     }
 }
