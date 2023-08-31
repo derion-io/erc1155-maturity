@@ -31,11 +31,11 @@ library TimeBalance {
         return (time << 224) | balance;
     }
 
-    function amount(uint256 x) internal pure returns (uint256) {
+    function getBalance(uint256 x) internal pure returns (uint256) {
         return x & BALANCE_MASK;
     }
 
-    function locktime(uint256 x) internal pure returns (uint256) {
+    function getTime(uint256 x) internal pure returns (uint256) {
         return x >> 224;
     }
 
@@ -46,7 +46,7 @@ library TimeBalance {
                 return (0, z); // full transfer
             }
             require(zBalance > yBalance, "INSUFFICIENT_BALANCE");
-            x = z - yBalance; // preserve the locktime
+            x = z - yBalance; // preserve the time
             y = (z & TIME_MASK) | yBalance;
         }
     }

@@ -149,7 +149,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     }
 
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
-        return s_timeBalances[account][id].amount();
+        return s_timeBalances[account][id].getBalance();
     }
 
     function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
@@ -171,7 +171,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
                               MATURITY LOGIC
     //////////////////////////////////////////////////////////////*/
     function maturityOf(address account, uint256 id) public view virtual override returns (uint256) {
-        return s_timeBalances[account][id].locktime();
+        return s_timeBalances[account][id].getTime();
     }
 
     /**
@@ -202,11 +202,11 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         address to,
         uint256 id,
         uint256 amount,
-        uint256 locktime,
+        uint256 time,
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ZERO_RECIPIENT");
-        uint timelockAmount = TimeBalance.pack(amount, locktime);
+        uint timelockAmount = TimeBalance.pack(amount, time);
         s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
         s_totalSupply[id] += amount;
 
@@ -219,7 +219,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         address to,
         uint256[] memory ids,
         uint256[] memory amounts,
-        uint256 locktime,
+        uint256 time,
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ZERO_RECIPIENT");
@@ -235,7 +235,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
             id = ids[i];
             amount = amounts[i];
 
-            uint timelockAmount = TimeBalance.pack(amount, locktime);
+            uint timelockAmount = TimeBalance.pack(amount, time);
             s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
             s_totalSupply[id] += amount;
 
