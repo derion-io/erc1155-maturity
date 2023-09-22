@@ -29,8 +29,8 @@ contract('Maturity', function () {
       it(
         'mint uint224.max / 2 => success\n' +
           '\t  mint uint224.max / 2 => failed\n' +
-          '\t  mint uint.max / 2 => failed\n' +
-          '\t  mint uint.max / 2 => failed',
+          '\t  mint uint256.max / 2 => failed\n' +
+          '\t  mint uint256.max / 2 => failed',
         async function () {
           await this.token.$_mint(this.accB.address, tokenId, uint224MaxDiv2, lockTime, data);
           await expect(

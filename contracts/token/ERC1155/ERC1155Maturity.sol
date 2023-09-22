@@ -15,7 +15,7 @@ import "./libs/TimeBalance.sol";
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC1155.sol)
 /// @author Derivable (https://github.com/derivable-labs/erc1155-maturity)
 contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
-    using TimeBalance for uint;
+    using TimeBalance for uint256;
 
     /*//////////////////////////////////////////////////////////////
                              ERC1155 STORAGE
@@ -85,7 +85,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes memory data
     ) internal virtual {
         uint256 fromBalance = s_timeBalances[from][id];
-        uint timelockAmount;
+        uint256 timelockAmount;
         (s_timeBalances[from][id], timelockAmount) = fromBalance.split(amount);
         s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
@@ -113,7 +113,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         for (uint256 i = 0; i < idsLength; ) {
             id = ids[i];
 
-            uint timelockAmount;
+            uint256 timelockAmount;
             (s_timeBalances[from][id], timelockAmount) = s_timeBalances[from][id].split(amounts[i]);
             s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
 
@@ -206,7 +206,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ZERO_RECIPIENT");
-        uint timelockAmount = TimeBalance.pack(amount, time);
+        uint256 timelockAmount = TimeBalance.pack(amount, time);
         s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
         s_totalSupply[id] += amount;
 
@@ -235,7 +235,7 @@ contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
             id = ids[i];
             amount = amounts[i];
 
-            uint timelockAmount = TimeBalance.pack(amount, time);
+            uint256 timelockAmount = TimeBalance.pack(amount, time);
             s_timeBalances[to][id] = s_timeBalances[to][id].merge(timelockAmount);
             s_totalSupply[id] += amount;
 
