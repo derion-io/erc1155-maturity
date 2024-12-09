@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-// Derivable Contracts (token/ERC1155/IERC1155Maturity.sol)
+// Derion Contracts (token/ERC1155/IERC1155Maturity.sol)
 
-pragma solidity 0.8.20;
+pragma solidity 0.8.28;
 
 import "./IERC1155Supply.sol";
 

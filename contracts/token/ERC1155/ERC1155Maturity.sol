@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // OpenZeppelin Contracts (last updated v4.8.0) (token/ERC1155/ERC1155.sol)
 // Solmate (tokens/ERC1155.sol)
-// Derivable Contracts (ERC1155Maturity)
+// Derion Contracts (ERC1155Maturity)
 
-pragma solidity 0.8.20;
+pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
@@ -13,7 +13,7 @@ import "./libs/TimeBalance.sol";
 
 /// @notice Minimalist and gas efficient standard ERC1155 implementation.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC1155.sol)
-/// @author Derivable (https://github.com/derivable-labs/erc1155-maturity)
+/// @author Derion (https://github.com/derion-io/erc1155-maturity)
 contract ERC1155Maturity is IERC1155Maturity, IERC1155MetadataURI {
     using TimeBalance for uint256;
 

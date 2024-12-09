@@ -1,7 +1,7 @@
 {
-  "name": "openzeppelin-solidity",
-  "description": "Secure Smart Contract library for Solidity",
-  "version": "4.8.2",
+  "name": "@derion/erc1155-maturity",
+  "description": "ERC-1155 with Maturity",
+  "version": "1.0.0",
   "files": [
     "/contracts/**/*.sol",
     "/build/contracts/*.json",
@@ -36,7 +36,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/OpenZeppelin/openzeppelin-contracts.git"
+    "url": "https://github.com/derion-io/erc1155-maturity.git"
   },
   "keywords": [
     "solidity",
@@ -46,12 +46,12 @@
     "security",
     "zeppelin"
   ],
-  "author": "OpenZeppelin Community <maintainers@openzeppelin.org>",
+  "author": "Derion Labs <zergity@derion.io>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/OpenZeppelin/openzeppelin-contracts/issues"
+    "url": "https://github.com/derion-io/erc1155-maturity/issues"
   },
-  "homepage": "https://openzeppelin.com/contracts/",
+  "homepage": "https://derion.io",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.3",
     "@nomiclabs/hardhat-ethers": "^2.1.0",
